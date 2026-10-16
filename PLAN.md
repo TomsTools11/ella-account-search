@@ -78,6 +78,7 @@ Tom: Ella only replies to inbound client emails; she won't complete tasks or run
 - [x] `next build` passes
 - [x] Tom created the Vercel project and Upstash (prefix KV) himself
 - [x] OAuth redirect went to localhost (APP_BASE_URL copied from .env.example) → app now ignores a localhost APP_BASE_URL on Vercel and uses its own address
-- [ ] Tom: sign in to Notion at `/admin` on the deployed URL
-- [ ] Verify on prod: /health green, forced refresh OK, no-passcode refused, Willard + Riverbend lookups
+- [x] Live at https://ella-account-search.vercel.app (Vercel team S3 Projects, auto-deploys from main)
+- [x] Tom connected Notion on prod; token refreshed seconds later (forced refresh OK); /health green (43 accounts read live)
+- [x] Prod checks 10/16: willard → correct dossier (13s); mbedbury@farmersagent.com → Riverbend (13s); Willard CPA → "That isn't in Notion."
 - [ ] **STOP for Tom's review / hand-off**
