@@ -4,7 +4,7 @@ import { getAccessToken, getStoredTokens, NotionAuthError } from "@/lib/notionAu
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Admin only (middleware): forces a Notion token refresh to prove rotation works.
+// Forces a Notion token refresh to prove rotation works.
 export async function POST() {
   const before = await getStoredTokens();
   try {

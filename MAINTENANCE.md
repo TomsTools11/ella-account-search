@@ -9,18 +9,18 @@ How the app works, and what to do when something needs changing.
 - **Fathom (optional).** If `FATHOM_API_KEY` is set, the "Get meeting summary" button falls back to Fathom recordings when Notion has no summary.
 - **Storage.** Upstash Redis holds the encrypted Notion tokens and the 15-minute caches. Locally it uses `.data/` instead, which is gitignored.
 
+## Access
+
+There's no login: anyone with the URL can use the app, including `/admin`. That was Tom's call (10/16) to keep it simple for Ella. The site is excluded from search engines. Keep the URL private and keep a monthly spend limit on the Anthropic key, since every lookup and question is billed to it.
+
 ## Environment variables (Vercel → Project → Settings → Environment Variables)
 
 | Name | What it is |
 |---|---|
 | `ANTHROPIC_API_KEY` | Claude Console API key |
 | `MODEL` | Claude model for search and Ask. Default `claude-sonnet-5-5`; currently `claude-haiku-5-5` |
-| `APP_PASSCODE` | Ella's passcode |
-| `ADMIN_PASSCODE` | Your passcode for `/admin` |
-| `SESSION_SECRET` | Random string that signs login cookies |
 | `TOKEN_ENCRYPTION_KEY` | 32 random bytes, base64. Encrypts stored Notion tokens and caches |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Added automatically by the Upstash integration (`KV_REST_API_*` also work) |
-| `APP_BASE_URL` | The production URL, e.g. `https://ella-account-search.vercel.app` |
 | `FATHOM_API_KEY` | Optional. Fathom → Settings → API Access |
 
 Generate random values with:
@@ -35,7 +35,7 @@ Never commit any of these. `.env.local` is gitignored.
 
 Notion sign-ins end 180 days after you sign in, or after 30 days without a refresh. The app refreshes the token about every 8 hours whenever it's used.
 
-1. Open `https://<app>/admin` and enter `ADMIN_PASSCODE`.
+1. Open `https://<app>/admin`.
 2. Click **Connect Notion** (or **Reconnect Notion**), sign in as yourself, and approve.
 3. Click **Force a token refresh**. It should say "Refresh token rotated: yes".
 4. Open `/health`. Everything should be green.
@@ -45,7 +45,6 @@ For local development, run `npm run notion:auth` instead (it needs port 3000 fre
 ## Rotating keys
 
 - **Anthropic key:** create a new key in the Console, replace `ANTHROPIC_API_KEY` in Vercel, redeploy, then revoke the old key.
-- **Passcodes:** change `APP_PASSCODE` or `ADMIN_PASSCODE` in Vercel and redeploy. To sign everyone out, also change `SESSION_SECRET`.
 - **`TOKEN_ENCRYPTION_KEY`:** changing it makes the stored Notion tokens unreadable. Change it, redeploy, then re-authorize Notion as above.
 
 ## Editing aliases and exclusions (no code changes)
@@ -63,7 +62,7 @@ Commit and push; Vercel redeploys automatically. Cached dossiers expire within 1
 - the latest date the Notion sign-in is guaranteed to last
 - whether the Claude and Fathom keys are set
 
-`/api/health` returns the same data as JSON, with HTTP 503 when something is wrong, so you can point an uptime monitor at it (it needs the login cookie).
+`/api/health` returns the same data as JSON, with HTTP 503 when something is wrong, so you can point an uptime monitor at it.
 
 ## Testing locally
 

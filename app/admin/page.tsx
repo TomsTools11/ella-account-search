@@ -1,24 +1,10 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { ADMIN_COOKIE, verifyToken } from "@/lib/session";
 import { getStoredTokens } from "@/lib/notionAuth";
-import { PasscodeForm } from "@/components/PasscodeForm";
 import { ForceRefresh } from "@/components/AdminActions";
 
 export const dynamic = "force-dynamic";
 
 export default async function Admin({ searchParams }: { searchParams: Promise<{ connected?: string; error?: string }> }) {
-  const isAdmin = await verifyToken((await cookies()).get(ADMIN_COOKIE)?.value, "admin");
-  if (!isAdmin) {
-    return (
-      <main className="flex min-h-screen items-center justify-center px-4">
-        <div className="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-line bg-surface p-8">
-          <h1 className="m-0 font-display text-2xl font-extrabold">Admin</h1>
-          <PasscodeForm admin next="/admin" />
-        </div>
-      </main>
-    );
-  }
   const sp = await searchParams;
   const t = await getStoredTokens().catch(() => null);
   return (

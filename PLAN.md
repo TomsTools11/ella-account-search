@@ -66,14 +66,14 @@ Design: Tom's mockup `Ella Account Lookup.html` (dark default, light follows sys
 ## Milestone 4: Deploy
 
 - [x] GitHub: pushed to TomsTools11/ella-account-search (public, Tom's call 10/16). No secrets in git; client-heavy local files (fixture, plan/, mockup) gitignored
-- [x] Passcode gate: middleware + signed httpOnly cookie (30 days); `/admin` needs separate ADMIN_PASSCODE. Tested: no cookie → login/401, wrong code → 401, user can't reach admin routes
+- [x] ~~Passcode gate~~ built and tested, then **removed at Tom's request 10/16** ("no serious information that needs hiding"; access by URL only). Kept: noindex headers + robots.txt
 - [x] `/admin`: Connect/Reconnect Notion (OAuth on prod URL), Force a token refresh (tested locally: rotated, read OK after)
 - [x] `/health` + `/api/health`: live Notion read, token expiry, sign-in end date, key checks
 - [x] Store requires Upstash on Vercel (filesystem is read-only there)
 - [x] README.md (Ella) and MAINTENANCE.md (Tom)
 - [x] `next build` passes
-- [ ] Tom: approve Upstash Redis (free tier) via Vercel Marketplace
-- [ ] Tom: approve first Vercel deploy (team "S3 Projects"), set env vars
+- [x] Tom created the Vercel project and Upstash (prefix KV) himself
+- [x] OAuth redirect went to localhost (APP_BASE_URL copied from .env.example) → app now ignores a localhost APP_BASE_URL on Vercel and uses its own address
 - [ ] Tom: sign in to Notion at `/admin` on the deployed URL
 - [ ] Verify on prod: /health green, forced refresh OK, no-passcode refused, Willard + Riverbend lookups
 - [ ] **STOP for Tom's review / hand-off**

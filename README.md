@@ -2,11 +2,9 @@
 
 This is a private lookup tool for Tom's GOAL accounts while he's on leave (Tue Oct 27 – Tue Nov 10, 2026). It reads Tom's account records live, so what you see is what's on file right now. It can't change anything and never sends email or messages.
 
-## Signing in
+## Opening it
 
-1. Open the link Tom sent you.
-2. Type the passcode Tom gave you and press **Sign in**.
-3. You stay signed in on that browser for 30 days.
+Open the link Tom sent you. There's no login. Bookmark it, and please don't share the link outside GOAL.
 
 ## Looking up an account
 
