@@ -147,7 +147,7 @@ export function AskPanel({ account }: { account?: { id: string; name: string } }
       <div aria-live="polite" className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
         {history.length === 0 && !pending && (
           <p className="m-0 text-sm leading-5 text-ink-muted">
-            Ask anything about {account ? "this account" : "Tom's accounts"}: contacts, open tasks, what happened in a
+            Ask anything about {account ? "this account" : "Tom's accounts"}: contacts, what a client asked for, what happened in a
             meeting, what a note says. Answers come only from Tom&apos;s Notion records.
           </p>
         )}

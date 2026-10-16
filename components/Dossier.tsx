@@ -4,14 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import aliasFile from "@/config/aliases.json";
 import type { Dossier as DossierT } from "@/lib/schemas";
-import { daysAgo, initials, meetingWhen, monthDay, pageId, pulledLabel, shortDay, todayISO } from "@/lib/format";
+import { daysAgo, initials, meetingWhen, monthDay, pageId, pulledLabel, shortDay } from "@/lib/format";
 import { CalendarIcon, ExternalIcon, LightbulbIcon, PageIcon, RefreshIcon } from "./icons";
 import { NotInNotion } from "./Status";
 import { Markdown } from "./Markdown";
 import type { MeetingSummary } from "@/lib/meetingSummary";
 
 type Contact = DossierT["contacts"][number];
-type Task = DossierT["openTasks"][number];
 type Note = DossierT["recentNotes"][number];
 
 const card = "rounded-xl border border-line bg-surface";
@@ -26,10 +25,6 @@ const STATUS_DOT: Record<string, string> = {
 
 const ROLE_ORDER = ["Main PoC", "Sales Leader", "Producer", "Admin"];
 const roleRank = (r: string | null) => (r && ROLE_ORDER.includes(r) ? ROLE_ORDER.indexOf(r) : ROLE_ORDER.length);
-
-export function sortTasks(tasks: Task[]) {
-  return [...tasks].sort((a, b) => (a.due ?? "9999").localeCompare(b.due ?? "9999"));
-}
 
 const aliasesFor = (name: string) =>
   Object.entries(aliasFile.aliases as Record<string, string>)
@@ -103,58 +98,6 @@ function ContactCard({ c }: { c: Contact }) {
         )}
       </div>
     </div>
-  );
-}
-
-function TaskRow({ t, last }: { t: Task; last: boolean }) {
-  const today = todayISO();
-  const due = t.due?.slice(0, 10) ?? null;
-  const overdue = !!due && due < today;
-  return (
-    <li className={`flex items-center gap-3 py-3 ${last ? "" : "border-b border-line"}`}>
-      <span aria-hidden className="h-[18px] w-[18px] flex-none rounded border-2 border-line-strong" />
-      <span className="flex-1 text-ink">
-        {t.title}
-        {t.status === "In Progress" && <span className="ml-2 text-xs text-ink-muted">In progress</span>}
-      </span>
-      <span className={`whitespace-nowrap text-sm ${overdue || due === today ? "font-semibold text-amber" : "text-ink-muted"}`}>
-        {!due ? "No due date" : overdue ? `Overdue · ${shortDay(due)}` : due === today ? "Due today" : `Due ${shortDay(due)}`}
-      </span>
-    </li>
-  );
-}
-
-function OpenItems({ tasks }: { tasks: Task[] }) {
-  const sorted = sortTasks(tasks);
-  const active = sorted.filter((t) => t.status !== "Waiting on Client");
-  const waiting = sorted.filter((t) => t.status === "Waiting on Client");
-  return (
-    <section aria-labelledby="open-h" className={`${card} flex flex-col gap-3 p-6`}>
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 id="open-h" className={h2}>
-          Open Tasks
-        </h2>
-        <span className="text-sm text-ink-muted">{tasks.length ? `${tasks.length} not complete` : ""}</span>
-      </div>
-      {tasks.length === 0 && <p className="m-0 text-ink-muted">No open tasks in Notion.</p>}
-      {active.length > 0 && (
-        <ul className="m-0 flex list-none flex-col p-0">
-          {active.map((t, i) => (
-            <TaskRow key={t.url} t={t} last={i === active.length - 1} />
-          ))}
-        </ul>
-      )}
-      {waiting.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <h3 className="m-0 mt-2 text-sm font-semibold text-ink-muted">Waiting on Client</h3>
-          <ul className="m-0 flex list-none flex-col p-0">
-            {waiting.map((t, i) => (
-              <TaskRow key={t.url} t={t} last={i === waiting.length - 1} />
-            ))}
-          </ul>
-        </div>
-      )}
-    </section>
   );
 }
 
@@ -374,8 +317,6 @@ export function DossierView({
 }) {
   const a = d.account;
   const contacts = [...d.contacts].sort((x, y) => roleRank(x.role) - roleRank(y.role));
-  const tasks = sortTasks(d.openTasks);
-  const next = tasks.find((t) => t.status !== "Waiting on Client" && t.due) ?? tasks.find((t) => t.due);
   const aliases = aliasesFor(a.name);
   const contactMatch = via && /contact|email/i.test(via) && !/account (title|name)/i.test(via);
 
@@ -455,12 +396,6 @@ export function DossierView({
           value={d.nextMeeting?.date ? shortDay(d.nextMeeting.date) : "None scheduled"}
           sub={d.nextMeeting ? (d.nextMeeting.type ?? d.nextMeeting.title) : undefined}
         />
-        <Glance
-          label="Next Due"
-          value={next?.due ? shortDay(next.due) : "Nothing"}
-          sub={next?.title}
-          highlight={!!next}
-        />
       </section>
 
       <div className="flex flex-wrap items-start gap-6">
@@ -495,7 +430,6 @@ export function DossierView({
             )}
           </section>
 
-          <OpenItems tasks={d.openTasks} />
           <LatestMeeting m={d.latestMeeting} accountId={a.id} />
 
           <section aria-labelledby="notes-h" className={`${card} flex flex-col gap-4 p-6`}>

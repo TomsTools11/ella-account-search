@@ -5,7 +5,7 @@ import { getAccessToken, NOTION_MCP_URL, NotionAuthError } from "./notionAuth";
 import { isAuthFailureText } from "./claude";
 
 // Direct, deterministic reads from the same Notion MCP server, without Claude.
-// Used for fixed queries (Needs Attention list, a note's full body, the health check).
+// Used for fixed reads (a note's full body, meeting summaries, the health check).
 // Only tools on the read allowlist in config/workspace.json can be called.
 
 export async function callNotionTool(

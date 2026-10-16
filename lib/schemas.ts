@@ -13,13 +13,6 @@ export const Contact = z.object({
   url: z.string(),
 });
 
-export const Task = z.object({
-  title: z.string(),
-  status: z.string().describe("To-Do, Waiting on Client, or In Progress"),
-  due: date,
-  url: z.string(),
-});
-
 export const Meeting = z.object({
   title: z.string(),
   date,
@@ -63,7 +56,6 @@ export const DossierResult = z.object({
   matchedVia: z.string().describe("How the query matched, e.g. 'account name', 'alias Monty', 'contact Weston Willard'"),
   account: Account,
   contacts: z.array(Contact),
-  openTasks: z.array(Task),
   latestMeeting: Meeting.nullable().describe("Most recent meeting dated today or earlier"),
   nextMeeting: z
     .object({ title: z.string(), date, type: z.string().nullable(), url: z.string() })

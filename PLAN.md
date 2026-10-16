@@ -63,6 +63,10 @@ Design: Tom's mockup `Ella Account Lookup.html` (dark default, light follows sys
 - [x] Follow-up turns keep context without retracting grounded facts
 - [ ] **STOP for Tom's review**
 
+## Change 10/16: no tasks
+
+Tom: Ella only replies to inbound client emails; she won't complete tasks or run meetings. Removed Needs Attention (home), Open Tasks + Next Due (dossier), tasks query from the lookup. Ask reframed around replying to emails; task records remain background only. Latest/next meeting kept as background.
+
 ## Milestone 4: Deploy
 
 - [x] GitHub: pushed to TomsTools11/ella-account-search (public, Tom's call 10/16). No secrets in git; client-heavy local files (fixture, plan/, mockup) gitignored

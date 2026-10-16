@@ -5,7 +5,7 @@ How the app works, and what to do when something needs changing.
 ## How it fits together
 
 - **Next.js on Vercel.** Search and dossiers call the Claude API with Notion's hosted MCP server attached (`https://mcp.notion.com/mcp`). Only four read tools are enabled at the API level: `notion-search`, `notion-fetch`, `notion-query-data-sources`, and `notion-query-meeting-notes`. Write tools never reach Claude.
-- **Direct reads.** A few fixed reads skip Claude and call the same MCP read tools from the server: Needs Attention, a note's full text, meeting summaries, and `/health`.
+- **Direct reads.** A few fixed reads skip Claude and call the same MCP read tools from the server: a note's full text, meeting summaries, and `/health`. (Tasks aren't shown in the app: Ella replies to client email and doesn't work Tom's task list. Ask can still read task records as background.)
 - **Fathom (optional).** If `FATHOM_API_KEY` is set, the "Get meeting summary" button falls back to Fathom recordings when Notion has no summary.
 - **Storage.** Upstash Redis holds the encrypted Notion tokens and the 15-minute caches. Locally it uses `.data/` instead, which is gitignored.
 

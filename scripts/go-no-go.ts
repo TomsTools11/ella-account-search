@@ -51,7 +51,6 @@ async function main() {
         ["1 contact", r.contacts.length === 1],
         ["contact name/role/email/phone", !!c && c.name === e.contacts[0].name && c.role === e.contacts[0].role && c.email === e.contacts[0].email && c.phone === e.contacts[0].phone],
         ["contact url", !!c && idOf(c.url) === e.contacts[0].id],
-        ["0 open tasks (archived task excluded)", r.openTasks.length === e.openTaskCount],
         ["latest meeting id", idOf(r.latestMeeting?.url ?? "") === e.latestMeeting.id],
         ["latest meeting type", r.latestMeeting?.type === e.latestMeeting.type],
         ["latest meeting date", (r.latestMeeting?.date ?? "").startsWith(e.latestMeeting.dateStart)],
