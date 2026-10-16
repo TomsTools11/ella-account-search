@@ -217,7 +217,7 @@ function MeetingSummaryButton({ accountId, label, secondary }: { accountId: stri
   return (
     <div className="flex flex-col gap-2">
       {data && !data.found && <NotInNotion title="No summary found." detail={data.message} />}
-      {state === "auth" && <NotInNotion title="The Notion connection is down." detail="Use the backup Claude Project, and contact Alex." />}
+      {state === "auth" && <NotInNotion title="The Notion connection is down." detail="Text Tom so he can reconnect it, and use the backup Claude Project until then." />}
       {state === "error" && <span className="text-sm text-ink-muted">Couldn&apos;t get the summary. Try again in a moment.</span>}
       {!data && (
         <button

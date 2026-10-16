@@ -24,6 +24,8 @@ export type Tokens = {
   obtainedAt: number;
   lastRefreshAt?: number;
   workspaceId?: string;
+  /** The OAuth client this grant belongs to (refresh must use the same one). */
+  client?: { client_id: string; client_secret?: string };
 };
 
 export class NotionAuthError extends Error {
@@ -97,7 +99,12 @@ export async function startAuthorization(redirectUri: string): Promise<string> {
 }
 
 /** Step 2: exchange the code from the callback for tokens and store them. */
-export async function completeAuthorization(redirectUri: string, code: string, state: string): Promise<Tokens> {
+export async function completeAuthorization(
+  redirectUri: string,
+  code: string,
+  state: string,
+  verify?: (accessToken: string) => Promise<boolean>,
+): Promise<Tokens> {
   const pending = await readJSON<{ verifier: string; state: string }>(PENDING_KEY);
   if (!pending || pending.state !== state) throw new Error("OAuth state mismatch or sign-in expired; start again");
   const meta = await metadata();
@@ -124,9 +131,16 @@ export async function completeAuthorization(redirectUri: string, code: string, s
     expiresAt: Date.now() + t.expires_in * 1000,
     obtainedAt: Date.now(),
     workspaceId: t.workspace_id,
+    client: { client_id: client.client_id, client_secret: client.client_secret },
   };
-  await writeJSON(TOKENS_KEY, tokens);
   await getKV().del(PENDING_KEY);
+  // Only replace the stored connection if this account can actually see Tom's HQ data.
+  if (verify && !(await verify(tokens.accessToken))) {
+    throw new Error(
+      "That Notion account can't see Tom's HQ workspace, so the existing connection was kept. Sign in with Tom's Notion account.",
+    );
+  }
+  await writeJSON(TOKENS_KEY, tokens);
   return tokens;
 }
 
@@ -136,7 +150,7 @@ export async function getStoredTokens(): Promise<Tokens | null> {
 
 async function refresh(current: Tokens): Promise<Tokens> {
   const meta = await metadata();
-  const client = await readJSON<Client>(CLIENT_KEY);
+  const client = current.client ?? (await readJSON<Client>(CLIENT_KEY));
   if (!client) throw new NotionAuthError("No registered Notion client; Tom must sign in again", true);
   const body = new URLSearchParams({
     grant_type: "refresh_token",
@@ -167,6 +181,8 @@ async function refresh(current: Tokens): Promise<Tokens> {
     }
     const err = (await res.json().catch(() => ({}))) as { error?: string };
     if (err.error === "invalid_grant" || err.error === "invalid_client") {
+      // The grant is dead for good: clear it so the app shows "Connect Notion".
+      await getKV().del(TOKENS_KEY);
       throw new NotionAuthError(`Notion refresh rejected (${err.error}); Tom must sign in again`, true);
     }
     lastErr = `${res.status} ${err.error ?? ""}`;

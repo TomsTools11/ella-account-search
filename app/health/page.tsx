@@ -28,7 +28,7 @@ export default async function HealthPage() {
       <h1 className="m-0 font-display text-3xl font-extrabold">{h.ok ? "Everything is working" : "Something needs attention"}</h1>
       {!h.ok && (
         <p className="m-0 rounded-xl border border-amber bg-amber-tint p-4 text-ink-soft">
-          The Notion connection is down. Use the backup Claude Project, and contact Alex.
+          The Notion connection is down. Text Tom so he can reconnect it, and use the backup Claude Project until then.
         </p>
       )}
       <section className="rounded-xl border border-line bg-surface px-5 py-2">

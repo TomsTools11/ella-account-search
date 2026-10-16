@@ -12,7 +12,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       <Link href="/" className="text-sm text-ink-muted no-underline">
         ← Home
       </Link>
-      <h1 className="m-0 font-display text-3xl font-extrabold">Admin</h1>
+      <h1 className="m-0 font-display text-3xl font-extrabold">Notion connection</h1>
       {sp.connected && <p className="m-0 rounded-lg bg-tint p-3 text-ink-soft">Notion connected.</p>}
       {sp.error && <p className="m-0 rounded-lg bg-amber-tint p-3 text-ink-soft">Notion sign-in failed: {sp.error}</p>}
       <section className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-6">
@@ -29,7 +29,8 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
           {t ? "Reconnect Notion" : "Connect Notion"}
         </a>
         <p className="m-0 text-xs text-ink-muted">
-          Sign in as Tom and approve access. The app only ever uses Notion&apos;s read tools.
+          Sign in with Tom&apos;s Notion account and approve access. Another account won&apos;t work: the app checks that the
+          account can see Tom&apos;s HQ workspace and keeps the current connection if it can&apos;t. The app only ever reads.
         </p>
         {t && <ForceRefresh />}
       </section>

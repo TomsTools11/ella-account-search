@@ -32,8 +32,15 @@ export function NotionDown() {
       <div className="flex flex-col gap-0.5">
         <span className="font-semibold text-ink">The Notion connection is down.</span>
         <span className="text-[15px] text-ink-soft">
-          Use the backup Claude Project for now, and contact Alex so the connection can be restored.
+          Text Tom so he can reconnect it (the button below needs his Notion account). Until then, use the backup
+          Claude Project.
         </span>
+        <a
+          href="/api/notion/start"
+          className="btn-primary mt-2 inline-flex h-10 items-center self-start rounded-lg bg-brand px-4 text-sm font-semibold text-white no-underline"
+        >
+          Connect Notion
+        </a>
       </div>
     </div>
   );

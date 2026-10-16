@@ -14,10 +14,14 @@ function NotionPill() {
   }, []);
   if (connected === null) return null;
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-raised px-3 py-1 text-xs font-medium leading-4 text-ink-muted">
+    <Link
+      href="/admin"
+      title="Notion connection"
+      className="inline-flex items-center gap-2 rounded-full bg-raised px-3 py-1 text-xs font-medium leading-4 text-ink-muted no-underline hover:text-ink"
+    >
       <span className={`h-2 w-2 rounded-full ${connected ? "bg-live" : "bg-amber"}`} />
-      {connected ? "Live from Notion" : "Notion not connected"}
-    </span>
+      {connected ? "Live from Notion" : "Connect Notion"}
+    </Link>
   );
 }
 

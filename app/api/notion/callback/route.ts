@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { completeAuthorization } from "@/lib/notionAuth";
 import { baseUrl } from "@/lib/baseUrl";
+import { canReadHQ } from "@/lib/notionDirect";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,10 +13,10 @@ export async function GET(req: Request) {
   const state = url.searchParams.get("state");
   try {
     if (!code || !state) throw new Error(url.searchParams.get("error") ?? "missing code");
-    await completeAuthorization(`${base}/api/notion/callback`, code, state);
+    await completeAuthorization(`${base}/api/notion/callback`, code, state, canReadHQ);
     return NextResponse.redirect(`${base}/admin?connected=1`);
   } catch (e) {
     console.error("[notion callback]", (e as Error).message);
-    return NextResponse.redirect(`${base}/admin?error=${encodeURIComponent((e as Error).message.slice(0, 120))}`);
+    return NextResponse.redirect(`${base}/admin?error=${encodeURIComponent((e as Error).message.slice(0, 200))}`);
   }
 }

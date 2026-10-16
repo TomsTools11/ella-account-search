@@ -55,6 +55,6 @@ Your questions stay in that browser tab only and clear when you close it.
 
 ## If something goes wrong
 
-- **"The Notion connection is down"** — use the backup Claude Project for now, and contact Alex.
+- **"The Notion connection is down"** — text Tom so he can reconnect it (the **Connect Notion** button needs his Notion account). Use the backup Claude Project until then.
 - **"Couldn't reach Notion"** — click **Try Again**; your question is saved.
 - To check the connection yourself, open `/health` on the same site. Green means everything is working.

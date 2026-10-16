@@ -1,6 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { ws } from "./config";
+import { DS, ws } from "./config";
 import { getAccessToken, NOTION_MCP_URL, NotionAuthError } from "./notionAuth";
 import { isAuthFailureText } from "./claude";
 
@@ -8,9 +8,13 @@ import { isAuthFailureText } from "./claude";
 // Used for fixed queries (Needs Attention list, a note's full body, the health check).
 // Only tools on the read allowlist in config/workspace.json can be called.
 
-export async function callNotionTool(name: string, args: Record<string, unknown>): Promise<string> {
+export async function callNotionTool(
+  name: string,
+  args: Record<string, unknown>,
+  opts: { token?: string } = {},
+): Promise<string> {
   if (!ws.notionTools.includes(name)) throw new Error(`Tool ${name} is not on the read-only allowlist`);
-  const token = await getAccessToken();
+  const token = opts.token ?? (await getAccessToken());
   const transport = new StreamableHTTPClientTransport(new URL(NOTION_MCP_URL), {
     requestInit: { headers: { Authorization: `Bearer ${token}` } },
   });
@@ -33,6 +37,20 @@ export async function callNotionTool(name: string, args: Record<string, unknown>
     throw e;
   } finally {
     await client.close().catch(() => {});
+  }
+}
+
+/** True if this access token can read the HQ Accounts data source (used to vet a new Notion sign-in). */
+export async function canReadHQ(token: string): Promise<boolean> {
+  try {
+    const text = await callNotionTool(
+      "notion-query-data-sources",
+      { data: { data_source_urls: [DS.accounts], query: `SELECT COUNT(*) AS n FROM "${DS.accounts}"` } },
+      { token },
+    );
+    return ((JSON.parse(text) as { results: { n: number }[] }).results[0]?.n ?? 0) > 0;
+  } catch {
+    return false;
   }
 }
 
