@@ -65,12 +65,15 @@ Design: Tom's mockup `Ella Account Lookup.html` (dark default, light follows sys
 
 ## Milestone 4: Deploy
 
-- [ ] Ask Tom: create private GitHub repo
-- [ ] Ask Tom: first Vercel deploy; check plan for deployment protection, else passcode gate
-- [ ] Passcode gate (middleware + httpOnly cookie) if needed
-- [ ] Upstash Redis for tokens + cache (ask before anything paid)
-- [ ] Admin route `/admin/notion` for Tom's one-time sign-in on prod
-- [ ] `/health`: tiny Notion read, token expiry, forced refresh test
-- [ ] Verify: no passcode → refused; no secrets in repo
-- [ ] README.md (Ella) and MAINTENANCE.md (Tom)
+- [x] GitHub: pushed to TomsTools11/ella-account-search (public, Tom's call 10/16). No secrets in git; client-heavy local files (fixture, plan/, mockup) gitignored
+- [x] Passcode gate: middleware + signed httpOnly cookie (30 days); `/admin` needs separate ADMIN_PASSCODE. Tested: no cookie → login/401, wrong code → 401, user can't reach admin routes
+- [x] `/admin`: Connect/Reconnect Notion (OAuth on prod URL), Force a token refresh (tested locally: rotated, read OK after)
+- [x] `/health` + `/api/health`: live Notion read, token expiry, sign-in end date, key checks
+- [x] Store requires Upstash on Vercel (filesystem is read-only there)
+- [x] README.md (Ella) and MAINTENANCE.md (Tom)
+- [x] `next build` passes
+- [ ] Tom: approve Upstash Redis (free tier) via Vercel Marketplace
+- [ ] Tom: approve first Vercel deploy (team "S3 Projects"), set env vars
+- [ ] Tom: sign in to Notion at `/admin` on the deployed URL
+- [ ] Verify on prod: /health green, forced refresh OK, no-passcode refused, Willard + Riverbend lookups
 - [ ] **STOP for Tom's review / hand-off**
