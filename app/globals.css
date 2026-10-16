@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+/* Design tokens from the mockup (Ella Account Lookup.html). Dark by default, light follows the system setting. */
+:root {
+  --ground: #080c10;
+  --surface: #0d1117;
+  --raised: #151a1e;
+  --border: rgba(30, 41, 59, 0.5);
+  --border-strong: #64748b;
+  --ink: #ffffff;
+  --ink-soft: #cbd5e1;
+  --ink-muted: #94a3b8;
+  --brand: #0479df;
+  --brand-text: #339fff;
+  --tint: rgba(4, 121, 223, 0.1);
+  --tint-strong: rgba(4, 121, 223, 0.15);
+  --brand-border: rgba(4, 121, 223, 0.3);
+  --amber: #d97706;
+  --amber-tint: rgba(217, 119, 6, 0.12);
+  --success: #22c55e;
+  --live: #4ade80;
+  --danger: #f87171;
+  --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-brand: 0 10px 15px -3px rgba(4, 121, 223, 0.25), 0 4px 6px -4px rgba(4, 121, 223, 0.25);
+  --gridline: rgba(148, 163, 184, 0.06);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --ground: #f6f8fc;
+    --surface: #ffffff;
+    --raised: #ebf0f9;
+    --border: #dbe2ec;
+    --border-strong: #94a3b8;
+    --ink: #001020;
+    --ink-soft: #334155;
+    --ink-muted: #475569;
+    --brand-text: #0569c4;
+    --tint: rgba(4, 121, 223, 0.08);
+    --tint-strong: rgba(4, 121, 223, 0.12);
+    --amber: #b45309;
+    --amber-tint: rgba(180, 83, 9, 0.08);
+    --success: #15803d;
+    --live: #16a34a;
+    --danger: #b91c1c;
+    --shadow-card: 0 12px 32px -16px rgba(0, 16, 32, 0.18);
+    --gridline: rgba(0, 16, 32, 0.05);
+    color-scheme: light;
+  }
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-brand: var(--brand);
+  --color-brand-text: var(--brand-text);
+  --color-tint: var(--tint);
+  --color-tint-strong: var(--tint-strong);
+  --color-brand-line: var(--brand-border);
+  --color-amber: var(--amber);
+  --color-amber-tint: var(--amber-tint);
+  --color-success: var(--success);
+  --color-live: var(--live);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-display: var(--font-sora), system-ui, sans-serif;
+  --shadow-card: var(--shadow-card);
+  --shadow-brand: var(--shadow-brand);
+}
+
+@layer base {
+html,
+body {
+  background: var(--ground);
+  color: var(--ink);
+}
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+}
+a {
+  color: var(--brand-text);
+}
+a:hover {
+  color: var(--ink);
+}
+:focus-visible {
+  outline: 2px solid var(--brand-text);
+  outline-offset: 2px;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--ink-muted);
+}
+mark {
+  background: var(--tint-strong);
+  color: var(--brand-text);
+  border-radius: 4px;
+  padding: 0 2px;
+}
+}
+
+@layer utilities {
+.gridbg {
+  background-image: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(4, 121, 223, 0.13), transparent 70%),
+    linear-gradient(var(--gridline) 1px, transparent 1px), linear-gradient(90deg, var(--gridline) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+}
+.btn-primary:hover {
+  filter: brightness(1.12);
+}
+.row:hover {
+  background: var(--raised);
+}
+.chip:hover,
+.src:hover {
+  border-color: var(--brand-border);
+  color: var(--ink);
+}
+.result:hover,
+.result[data-active="true"] {
+  background: var(--raised);
+  border-color: var(--brand-border);
+}
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.dot {
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Note bodies rendered from Notion markdown */
+.prose-note {
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 23px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

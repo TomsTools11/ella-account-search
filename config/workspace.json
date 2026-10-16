@@ -1,0 +1,98 @@
+{
+  "_comment": "Notion data sources the app reads. Edit IDs, property names, and exclusions here; no code changes needed. Restart or redeploy after editing.",
+  "dataSources": {
+    "accounts": {
+      "id": "3e71bd87-59cc-80e0-be30-000bc054c127",
+      "title": "Client Account",
+      "properties": {
+        "Status": "select: Onboarding, Waiting on Client, Active, Paused",
+        "Carrier": "select",
+        "State": "select (two-letter code)",
+        "Campaigns": "multi-select: Auto, Home, Commercial, Life",
+        "Reporting site": "url"
+      },
+      "relations": [
+        "Contact(s)",
+        "Tasks",
+        "Note(s)",
+        "Meeting Notes",
+        "Project(s)"
+      ],
+      "notes": "The account page body also holds notes."
+    },
+    "contacts": {
+      "id": "3e71bd87-59cc-808d-b046-000bbb539a03",
+      "title": "Name",
+      "properties": {
+        "Role": "select: Admin, Producer, Main PoC, Sales Leader",
+        "email": "email (lowercase property name)",
+        "Phone": "phone"
+      },
+      "accountRelation": "Account"
+    },
+    "tasks": {
+      "id": "3e71bd87-59cc-80cd-b4d1-000bbd7546ce",
+      "title": "Task",
+      "properties": {
+        "Status": "status: To-Do, Waiting on Client, In Progress, Complete",
+        "Due": "date (SQL columns date:Due:start / date:Due:end)",
+        "Assigned to": "person"
+      },
+      "accountRelation": "Account"
+    },
+    "notes": {
+      "id": "3e71bd87-59cc-8010-b5cc-000b9f3a9abc",
+      "title": "Title",
+      "properties": {
+        "Type": "select: Meeting Notes, Campaign Config, Onboarding, Right Pricing, Research, Daily Brief, Account Report",
+        "Date": "created time"
+      },
+      "accountRelation": "Account(s)",
+      "notes": "The substance is in the page body."
+    },
+    "meetingNotes": {
+      "id": "68a4588e-01fa-46c4-a6ac-8488209fd196",
+      "title": "Meeting",
+      "properties": {
+        "Type": "select: Account Review, Onboarding, Check-in, Internal",
+        "Date": "date (SQL columns date:Date:start / date:Date:end)",
+        "Calendar Event": "url"
+      },
+      "accountRelation": "Account",
+      "notes": "Bodies are Notion AI meeting-note blocks with a summary and a transcript. The summary may not come back through the tools."
+    },
+    "projects": {
+      "id": "3f41bd87-59cc-80ca-9ae5-000b0226166a",
+      "title": "Project name",
+      "properties": {
+        "Status": "status: Planning, In progress, Done",
+        "Start date": "date (SQL columns date:Start date:start)",
+        "Deadline": "date (SQL columns date:Deadline:start)"
+      },
+      "accountRelation": "Account(s)"
+    }
+  },
+  "exclusions": {
+    "accountTitles": [
+      "GOAL Internal Meetings"
+    ],
+    "noteTypes": [
+      "Daily Brief"
+    ],
+    "databases": [
+      "Skills",
+      "Archived Notes",
+      "QuickNotes"
+    ]
+  },
+  "notionTools": [
+    "notion-search",
+    "notion-fetch",
+    "notion-query-data-sources",
+    "notion-query-meeting-notes"
+  ],
+  "fathom": {
+    "_comment": "Fallback for meeting summaries when Notion has none. Needs FATHOM_API_KEY. Leave recordedBy empty to search everyone's recordings (calls are often run by Nick, Ella, etc.); matching uses the contacts' email domains and exact emails.",
+    "recordedBy": []
+  }
+}
