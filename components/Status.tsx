@@ -36,7 +36,7 @@ export function NotionDown() {
           Claude Project.
         </span>
         <a
-          href="/api/notion/start"
+          href="/api/connect/notion/start"
           className="btn-primary mt-2 inline-flex h-10 items-center self-start rounded-lg bg-brand px-4 text-sm font-semibold text-white no-underline"
         >
           Connect Notion

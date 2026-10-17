@@ -1,6 +1,9 @@
 import { DS } from "./config";
 import { getStoredTokens } from "./notionAuth";
 import { notionSql } from "./notionDirect";
+import { superhuman } from "./superhumanAuth";
+import { callMcpTool } from "./mcpDirect";
+import { ws } from "./config";
 
 export type Health = {
   ok: boolean;
@@ -14,6 +17,7 @@ export type Health = {
     /** Notion ends a grant 180 days after sign-in, or after 30 days without a refresh. */
     grantEndsBy: number | null;
   };
+  email: { connected: boolean; ok: boolean; account?: string; accessExpiresAt: number | null; error?: string };
   anthropicKey: boolean;
   fathomKey: boolean;
 };
@@ -30,6 +34,17 @@ export async function checkHealth(): Promise<Health> {
   } catch (e) {
     notionRead = { ok: false, ms: Date.now() - started, error: (e as Error).message.slice(0, 200) };
   }
+  const st = await superhuman.getStoredTokens().catch(() => null);
+  let email: Health["email"] = { connected: !!st, ok: false, account: st?.account, accessExpiresAt: st?.expiresAt ?? null };
+  if (st) {
+    try {
+      await callMcpTool(superhuman, ws.superhuman.tools, "list_accounts", {});
+      const after = await superhuman.getStoredTokens();
+      email = { ...email, ok: true, accessExpiresAt: after?.expiresAt ?? email.accessExpiresAt };
+    } catch (e) {
+      email = { ...email, error: (e as Error).message.slice(0, 200) };
+    }
+  }
   const t = await getStoredTokens().catch(() => null);
   const last = t?.lastRefreshAt ?? t?.obtainedAt ?? null;
   return {
@@ -43,6 +58,7 @@ export async function checkHealth(): Promise<Health> {
       signedInAt: t?.obtainedAt ?? null,
       grantEndsBy: t ? Math.min(t.obtainedAt + 180 * DAY, (last ?? t.obtainedAt) + 30 * DAY) : null,
     },
+    email,
     anthropicKey: !!process.env.ANTHROPIC_API_KEY,
     fathomKey: !!process.env.FATHOM_API_KEY,
   };

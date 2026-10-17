@@ -42,9 +42,8 @@ Use the **Ask** box on the home page or on any account page. On an account page 
 - "What does Mandi need before Riverbend will keep the Lead Marketplace?"
 - "What happened in the last Supreme Choice review?"
 
-Answers are short and come only from Tom's records. If the records don't cover something, it says **"That isn't in Notion."** and tells you where to look instead:
+Answers are short and come only from Tom's records: his Notion notes, his calendar, and his email with that client. For example, you can ask "When did Weston last email, and what did he ask for?" or "When is the next Byron Center review?" If the records don't cover something, it says **"That isn't in Notion."** and tells you where to look instead:
 
-- **Close** for client emails and history
 - **GOAL exports** for performance numbers (CPA, spend, leads)
 - **Chris** for platform, billing, or bid questions
 

@@ -5,22 +5,24 @@ import { useEffect, useState } from "react";
 import { SearchBox } from "./SearchBox";
 
 function NotionPill() {
-  const [connected, setConnected] = useState<boolean | null>(null);
+  const [status, setStatus] = useState<{ connected: boolean; email: boolean } | null>(null);
   useEffect(() => {
     fetch("/api/status")
       .then((r) => r.json())
-      .then((s) => setConnected(!!s.connected))
-      .catch(() => setConnected(false));
+      .then((s) => setStatus({ connected: !!s.connected, email: !!s.email }))
+      .catch(() => setStatus({ connected: false, email: false }));
   }, []);
-  if (connected === null) return null;
+  if (status === null) return null;
+  const ok = status.connected && status.email;
+  const label = !status.connected ? "Connect Notion" : !status.email ? "Email not connected" : "Live: Notion + email";
   return (
     <Link
       href="/admin"
       title="Notion connection"
       className="inline-flex items-center gap-2 rounded-full bg-raised px-3 py-1 text-xs font-medium leading-4 text-ink-muted no-underline hover:text-ink"
     >
-      <span className={`h-2 w-2 rounded-full ${connected ? "bg-live" : "bg-amber"}`} />
-      {connected ? "Live from Notion" : "Connect Notion"}
+      <span className={`h-2 w-2 rounded-full ${ok ? "bg-live" : "bg-amber"}`} />
+      {label}
     </Link>
   );
 }

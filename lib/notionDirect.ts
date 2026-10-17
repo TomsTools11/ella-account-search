@@ -1,8 +1,6 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { DS, ws } from "./config";
-import { getAccessToken, NOTION_MCP_URL, NotionAuthError } from "./notionAuth";
-import { isAuthFailureText } from "./claude";
+import { notion, NotionAuthError } from "./notionAuth";
+import { callMcpTool } from "./mcpDirect";
 
 // Direct, deterministic reads from the same Notion MCP server, without Claude.
 // Used for fixed reads (a note's full body, meeting summaries, the health check).
@@ -13,30 +11,11 @@ export async function callNotionTool(
   args: Record<string, unknown>,
   opts: { token?: string } = {},
 ): Promise<string> {
-  if (!ws.notionTools.includes(name)) throw new Error(`Tool ${name} is not on the read-only allowlist`);
-  const token = opts.token ?? (await getAccessToken());
-  const transport = new StreamableHTTPClientTransport(new URL(NOTION_MCP_URL), {
-    requestInit: { headers: { Authorization: `Bearer ${token}` } },
-  });
-  const client = new Client({ name: "goal-account-lookup", version: "1.0.0" });
   try {
-    await client.connect(transport);
-    const res = await client.callTool({ name, arguments: args });
-    const text = (res.content as { type: string; text?: string }[])
-      .map((c) => (c.type === "text" ? c.text ?? "" : ""))
-      .join("\n");
-    if (res.isError) {
-      if (isAuthFailureText(text)) throw new NotionAuthError(`Notion rejected the token: ${text.slice(0, 200)}`, false);
-      throw new Error(`Notion ${name} failed: ${text.slice(0, 300)}`);
-    }
-    return text;
+    return await callMcpTool(notion, [...ws.notionTools, ...ws.askNotionTools], name, args, opts);
   } catch (e) {
-    if (e instanceof NotionAuthError) throw e;
-    const msg = (e as Error).message ?? String(e);
-    if (isAuthFailureText(msg)) throw new NotionAuthError(`Notion connection failed: ${msg}`, false);
+    if ((e as { authFailure?: boolean }).authFailure) throw new NotionAuthError((e as Error).message, false);
     throw e;
-  } finally {
-    await client.close().catch(() => {});
   }
 }
 

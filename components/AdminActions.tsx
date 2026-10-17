@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function ForceRefresh() {
+export function ForceRefresh({ provider }: { provider: string }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   return (
@@ -12,18 +12,22 @@ export function ForceRefresh() {
         disabled={busy}
         onClick={async () => {
           setBusy(true);
-          const r = await fetch("/api/admin/refresh", { method: "POST" });
+          const r = await fetch("/api/admin/refresh", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ provider }),
+          });
           const j = await r.json();
           setBusy(false);
           setMsg(
             j.ok
-              ? `Refreshed. Refresh token rotated: ${j.rotated ? "yes" : "no"}. Access token now expires ${new Date(j.expiresAt).toLocaleString()}.`
-              : `Refresh failed${j.reauth ? " (sign in to Notion again)" : ""}: ${j.error}`,
+              ? `Refreshed. Next expiry ${new Date(j.expiresAt).toLocaleString()}.`
+              : `Refresh failed${j.reauth ? ": click Reconnect" : ""}. ${j.error}`,
           );
         }}
-        className="h-11 self-start rounded-lg border border-line-strong bg-transparent px-4 font-semibold text-ink disabled:opacity-60"
+        className="self-start bg-transparent p-0 text-sm font-medium text-ink-muted underline-offset-2 hover:underline disabled:opacity-60"
       >
-        {busy ? "Refreshing…" : "Force a token refresh"}
+        {busy ? "Testing…" : "Test the connection"}
       </button>
       {msg && <span className="text-sm text-ink-muted">{msg}</span>}
     </div>

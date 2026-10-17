@@ -94,5 +94,20 @@
   "fathom": {
     "_comment": "Fallback for meeting summaries when Notion has none. Needs FATHOM_API_KEY. Leave recordedBy empty to search everyone's recordings (calls are often run by Nick, Ella, etc.); matching uses the contacts' email domains and exact emails.",
     "recordedBy": []
+  },
+  "askNotionTools": [
+    "notion-calendar-list-events",
+    "notion-calendar-list-calendars"
+  ],
+  "superhuman": {
+    "_comment": "Tom's mailbox via Superhuman Mail MCP, used only by Ask. Only these read tools are enabled; send/draft/trash/label/event tools are never exposed. A sign-in is accepted only if it includes expectedAccount.",
+    "expectedAccount": "tpanos@checkoutgoal.com",
+    "tools": [
+      "query_email_and_calendar",
+      "list_threads",
+      "get_thread",
+      "get_message",
+      "list_accounts"
+    ]
   }
 }

@@ -7,6 +7,7 @@ import type {
 } from "@anthropic-ai/sdk/resources/beta/messages/messages";
 import { DS, model, ws } from "./config";
 import { getAccessToken, NOTION_MCP_URL, NotionAuthError } from "./notionAuth";
+import { superhuman, SUPERHUMAN_MCP_URL } from "./superhumanAuth";
 import { SearchResponse } from "./schemas";
 import { searchSystemPrompt, searchUserMessage } from "./prompts";
 
@@ -36,12 +37,53 @@ export async function notionMcp(): Promise<{ mcp_servers: BetaRequestMCPServerUR
   };
 }
 
+/**
+ * MCP servers for Ask: Notion (account data + calendar read tools) and, when connected,
+ * Superhuman (email read tools). A Superhuman problem never blocks Ask.
+ */
+export async function askMcp(): Promise<{
+  mcp_servers: BetaRequestMCPServerURLDefinition[];
+  tools: BetaToolUnion[];
+  emailAvailable: boolean;
+}> {
+  const token = await getAccessToken();
+  const mcp_servers: BetaRequestMCPServerURLDefinition[] = [
+    { type: "url", url: NOTION_MCP_URL, name: MCP_NAME, authorization_token: token },
+  ];
+  const tools: BetaToolUnion[] = [
+    {
+      type: "mcp_toolset",
+      mcp_server_name: MCP_NAME,
+      default_config: { enabled: false },
+      configs: Object.fromEntries([...ws.notionTools, ...ws.askNotionTools].map((t) => [t, { enabled: true }])),
+    },
+  ];
+  let emailAvailable = false;
+  try {
+    const mail = await superhuman.getAccessToken();
+    mcp_servers.push({ type: "url", url: SUPERHUMAN_MCP_URL, name: "superhuman", authorization_token: mail });
+    tools.push({
+      type: "mcp_toolset",
+      mcp_server_name: "superhuman",
+      default_config: { enabled: false },
+      configs: Object.fromEntries(ws.superhuman.tools.map((t) => [t, { enabled: true }])),
+    });
+    emailAvailable = true;
+  } catch (e) {
+    console.warn("[ask] email not available:", (e as Error).message);
+  }
+  return { mcp_servers, tools, emailAvailable };
+}
+
 /** Plain-English progress line for a Notion tool call. */
 export function describeToolCall(name: string, input: unknown): string {
   const s = JSON.stringify(input ?? {});
   if (name === "notion-search") return "Searching Notion";
   if (name === "notion-query-meeting-notes") return "Reading meeting notes";
   if (name === "notion-fetch") return "Opening a Notion page";
+  if (name.startsWith("notion-calendar")) return "Checking the calendar";
+  if (["query_email_and_calendar", "list_threads"].includes(name)) return "Searching email";
+  if (["get_thread", "get_message"].includes(name)) return "Reading an email";
   if (name === "notion-query-data-sources") {
     const hits = [
       [DS.tasks, "Reading tasks"],

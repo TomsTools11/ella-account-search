@@ -36,12 +36,19 @@ export default async function HealthPage() {
           {h.notionRead.ok ? `Read ${h.notionRead.accounts} account rows in ${h.notionRead.ms} ms` : `Failed: ${h.notionRead.error}`}
         </Row>
         <Row label="Notion access token" ok={h.token.connected}>
-          {h.token.connected ? `Next expires ${fmt(h.token.accessExpiresAt)} (refreshes automatically)` : "Not connected. Tom needs to sign in at /admin."}
+          {h.token.connected ? `Next expires ${fmt(h.token.accessExpiresAt)} (refreshes automatically)` : "Not connected. Tom can connect it at /admin."}
         </Row>
         <Row label="Notion sign-in" ok={h.token.connected ? (h.token.grantEndsBy ?? 0) - Date.now() > 14 * 86_400_000 : false}>
           {h.token.connected
             ? `Signed in ${fmt(h.token.signedInAt)}, last refresh ${fmt(h.token.lastRefreshAt)}. Good until at least ${fmt(h.token.grantEndsBy)} if refreshes keep working.`
             : "—"}
+        </Row>
+        <Row label="Email (Superhuman)" ok={h.email.connected ? h.email.ok : false}>
+          {!h.email.connected
+            ? "Not connected. Ask still works from Notion; Tom can connect email at /admin."
+            : h.email.ok
+              ? `Working${h.email.account ? ` (${h.email.account})` : ""}. Token next expires ${fmt(h.email.accessExpiresAt)} (renews automatically)`
+              : `Failed: ${h.email.error}. Tom can reconnect at /admin.`}
         </Row>
         <Row label="Claude API key" ok={h.anthropicKey}>{h.anthropicKey ? "Set" : "Missing ANTHROPIC_API_KEY"}</Row>
         <Row label="Fathom (optional)" ok={h.fathomKey ? true : null}>

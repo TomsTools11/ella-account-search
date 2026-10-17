@@ -31,6 +31,22 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 Never commit any of these. `.env.local` is gitignored.
 
+## Connections (Notion and Superhuman)
+
+`/admin` has one **Connect / Reconnect** button for each service. Click it, sign in, approve, and you're done. Each new sign-in is checked before it replaces the working one:
+
+- **Notion** must be able to read your HQ Accounts database.
+- **Superhuman** must include `tpanos@checkoutgoal.com` (`config/workspace.json → superhuman.expectedAccount`).
+
+If the wrong account signs in, the old connection is kept and the page says why.
+
+What each one does:
+
+- **Notion:** search, dossiers, and Ask. Its connection also covers your Google work calendar through Notion Calendar. Only the read tools `notion-calendar-list-events` and `notion-calendar-list-calendars` are enabled, and only in Ask.
+- **Superhuman:** your mailbox, for Ask only. Only `query_email_and_calendar`, `list_threads`, `get_thread`, `get_message`, and `list_accounts` are enabled. Send, draft, trash, label, reminder, and event tools are never exposed. If Superhuman is disconnected, Ask still works from Notion and says email wasn't checked.
+
+The header pill turns amber when either connection is missing, and `/health` shows both.
+
 ## Re-authorizing Notion
 
 Notion sign-ins end 180 days after you sign in, or after 30 days without a refresh. The app refreshes the token about every 8 hours whenever it's used.

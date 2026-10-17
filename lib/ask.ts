@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { BetaMessageParam } from "@anthropic-ai/sdk/resources/beta/messages/messages";
-import { anthropic, BETAS, describeToolCall, isAuthFailureText, notionMcp } from "./claude";
+import { anthropic, askMcp, BETAS, describeToolCall, isAuthFailureText } from "./claude";
 import { model } from "./config";
 import { NotionAuthError } from "./notionAuth";
 import { askSystemPrompt } from "./prompts";
@@ -46,7 +46,7 @@ export async function runAsk(
 ): Promise<void> {
   const started = Date.now();
   try {
-    const { mcp_servers, tools } = await notionMcp();
+    const { mcp_servers, tools, emailAvailable } = await askMcp();
     const history: BetaMessageParam[] = input.history
       .slice(-8)
       .map((t) => ({ role: t.role, content: t.content.slice(0, 4000) }));
@@ -61,6 +61,7 @@ export async function runAsk(
       let current = ""; // text of the answer streamed so far in this request
       let shown = 0;
       let authFail: string | null = null;
+      const notionCalls = new Set<string>(); // tool_use ids on the Notion server
 
       const stream = anthropic().beta.messages.stream(
         {
@@ -68,7 +69,7 @@ export async function runAsk(
           max_tokens: 8000,
           betas: BETAS,
           fallbacks: "default",
-          system: [{ type: "text", text: askSystemPrompt(input.account), cache_control: { type: "ephemeral" } }],
+          system: [{ type: "text", text: askSystemPrompt(input.account, emailAvailable), cache_control: { type: "ephemeral" } }],
           messages,
           mcp_servers,
           tools,
@@ -97,6 +98,7 @@ export async function runAsk(
       });
       stream.on("contentBlock", (block) => {
         if (block.type === "mcp_tool_use") {
+          if (block.server_name === "notion") notionCalls.add(block.id);
           // Any text before a tool call was preamble, not the answer.
           if (current) emit({ type: "reset" });
           current = "";
@@ -106,7 +108,8 @@ export async function runAsk(
           const text = Array.isArray(block.content)
             ? block.content.map((c) => ("text" in c ? c.text : "")).join(" ")
             : String(block.content);
-          if (isAuthFailureText(text)) {
+          // Only a Notion auth failure stops Ask; an email problem just leaves email out.
+          if (isAuthFailureText(text) && notionCalls.has(block.tool_use_id)) {
             authFail = text.slice(0, 200);
             stream.abort();
           }
