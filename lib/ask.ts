@@ -5,6 +5,7 @@ import { model } from "./config";
 import { NotionAuthError } from "./notionAuth";
 import { askSystemPrompt } from "./prompts";
 import { pageIdOf } from "./ids";
+import { askClientTools, CLIENT_TOOL_LABEL, runClientTool } from "./askTools";
 
 export type AskSource = { n: number; title: string; url: string; date: string | null; pageId: string };
 export type AskEvent =
@@ -46,7 +47,10 @@ export async function runAsk(
 ): Promise<void> {
   const started = Date.now();
   try {
-    const { mcp_servers, tools, emailAvailable } = await askMcp();
+    const { mcp_servers, tools: mcpTools, emailAvailable } = await askMcp();
+    const clientTools = askClientTools();
+    const tools = [...mcpTools, ...clientTools];
+    const callsAvailable = clientTools.length > 0;
     const history: BetaMessageParam[] = input.history
       .slice(-8)
       .map((t) => ({ role: t.role, content: t.content.slice(0, 4000) }));
@@ -57,7 +61,7 @@ export async function runAsk(
     emit({ type: "progress", message: "Reading Notion" });
 
     let finalText = "";
-    for (let turn = 0; turn < 6; turn++) {
+    for (let turn = 0; turn < 10; turn++) {
       let current = ""; // text of the answer streamed so far in this request
       let shown = 0;
       let authFail: string | null = null;
@@ -69,7 +73,7 @@ export async function runAsk(
           max_tokens: 8000,
           betas: BETAS,
           fallbacks: "default",
-          system: [{ type: "text", text: askSystemPrompt(input.account, emailAvailable), cache_control: { type: "ephemeral" } }],
+          system: [{ type: "text", text: askSystemPrompt(input.account, emailAvailable, callsAvailable), cache_control: { type: "ephemeral" } }],
           messages,
           mcp_servers,
           tools,
@@ -97,7 +101,12 @@ export async function runAsk(
         }
       });
       stream.on("contentBlock", (block) => {
-        if (block.type === "mcp_tool_use") {
+        if (block.type === "tool_use") {
+          if (current) emit({ type: "reset" });
+          current = "";
+          shown = 0;
+          emit({ type: "progress", message: CLIENT_TOOL_LABEL[block.name] ?? "Looking something up" });
+        } else if (block.type === "mcp_tool_use") {
           if (block.server_name === "notion") notionCalls.add(block.id);
           // Any text before a tool call was preamble, not the answer.
           if (current) emit({ type: "reset" });
@@ -129,18 +138,19 @@ export async function runAsk(
         continue;
       }
       if (msg.stop_reason === "tool_use") {
+        // Run our own read-only tools (Fathom) and return all results in one message.
         messages.push({ role: "assistant", content: msg.content });
-        messages.push({
-          role: "user",
-          content: msg.content
-            .filter((b) => b.type === "tool_use")
-            .map((b) => ({
-              type: "tool_result" as const,
-              tool_use_id: b.id,
-              is_error: true,
-              content: "That tool does not exist. Use only the Notion tools.",
-            })),
-        });
+        const uses = msg.content.filter((b) => b.type === "tool_use");
+        const results = await Promise.all(
+          uses.map(async (b) => {
+            try {
+              return { type: "tool_result" as const, tool_use_id: b.id, content: await runClientTool(b.name, b.input) };
+            } catch (e) {
+              return { type: "tool_result" as const, tool_use_id: b.id, is_error: true, content: (e as Error).message.slice(0, 300) };
+            }
+          }),
+        );
+        messages.push({ role: "user", content: results });
         continue;
       }
       if (msg.stop_reason === "refusal") throw new Error("The model declined to answer this question");

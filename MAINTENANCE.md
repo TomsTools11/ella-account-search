@@ -45,6 +45,8 @@ What each one does:
 - **Notion:** search, dossiers, and Ask. Its connection also covers your Google work calendar through Notion Calendar. Only the read tools `notion-calendar-list-events` and `notion-calendar-list-calendars` are enabled, and only in Ask.
 - **Superhuman:** your mailbox, for Ask only. Only `query_email_and_calendar`, `list_threads`, `get_thread`, `get_message`, and `list_accounts` are enabled. Send, draft, trash, label, reminder, and event tools are never exposed. If Superhuman is disconnected, Ask still works from Notion and says email wasn't checked.
 
+- **Fathom (API key, no sign-in):** with `FATHOM_API_KEY` set, Ask can list an account's recorded calls and read their summaries (`search_fathom_calls`, `get_fathom_call_summary`, both run on the server), and the "Get meeting summary" button falls back to Fathom. Calls are matched by the contacts' emails or the agency name. Without the key, Ask just doesn't offer these tools.
+
 The header pill turns amber when either connection is missing, and `/health` shows both.
 
 ## Re-authorizing Notion
