@@ -9,11 +9,13 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "notion:auth": "tsx --env-file=.env.local scripts/notion-auth.ts",
-    "go-no-go": "tsx --env-file=.env.local scripts/go-no-go.ts"
+    "go-no-go": "tsx --env-file=.env.local scripts/go-no-go.ts",
+    "eval:search": "tsx --env-file=.env.local scripts/jev-search-eval.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
     "@modelcontextprotocol/sdk": "^1.32.1",
+    "@typesafe-ai/sdk": "^0.7.0",
     "@upstash/redis": "^1.39.0",
     "next": "^15.5.28",
     "react": "^19.3.1",

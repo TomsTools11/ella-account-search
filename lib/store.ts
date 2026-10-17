@@ -74,6 +74,26 @@ class FileKV implements KV {
   }
 }
 
+/** Puts every key (tokens, caches, locks) under a prefix, so a preview deployment never touches live data. */
+class PrefixKV implements KV {
+  constructor(private inner: KV, private prefix: string) {}
+  get(key: string) {
+    return this.inner.get(this.prefix + key);
+  }
+  set(key: string, value: string, ttlSeconds?: number) {
+    return this.inner.set(this.prefix + key, value, ttlSeconds);
+  }
+  del(key: string) {
+    return this.inner.del(this.prefix + key);
+  }
+  lock(key: string, ttlSeconds: number) {
+    return this.inner.lock(this.prefix + key, ttlSeconds);
+  }
+  unlock(key: string) {
+    return this.inner.unlock(this.prefix + key);
+  }
+}
+
 let kv: KV | null = null;
 
 export function getKV(): KV {
@@ -83,5 +103,8 @@ export function getKV(): KV {
   if (url && token) kv = new RedisKV(new Redis({ url, token }));
   else if (process.env.VERCEL) throw new Error("Storage isn't configured: add Upstash Redis (UPSTASH_REDIS_REST_URL/TOKEN) in Vercel");
   else kv = new FileKV();
+  // Vercel preview deployments (test branches) get their own keyspace, including their own
+  // Notion and email connections, so testing a branch can't change what the live site uses.
+  if (process.env.VERCEL_ENV === "preview") kv = new PrefixKV(kv, "preview_");
   return kv;
 }

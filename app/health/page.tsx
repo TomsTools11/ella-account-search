@@ -54,6 +54,13 @@ export default async function HealthPage() {
         <Row label="Fathom (optional)" ok={h.fathomKey ? true : null}>
           {h.fathomKey ? "Set; meeting summaries can fall back to Fathom" : "Not set; meeting summaries use Notion only"}
         </Row>
+        <Row label="Search matching (Jev)" ok={h.jev.keySet ? h.jev.ok : null}>
+          {!h.jev.keySet
+            ? "Not set up; Claude matches searches"
+            : !h.jev.ok
+              ? "TypeSafe didn't answer the test call; searches fall back to Claude"
+              : `${h.jev.on ? "On" : "Key set but off (JEV_SEARCH isn't 1); Claude matches searches"}. Test call ${h.jev.ms} ms on ${h.jev.model}`}
+        </Row>
       </section>
       <p className="m-0 text-xs text-ink-muted">Checked {fmt(h.checkedAt)}</p>
     </main>

@@ -102,7 +102,7 @@ function Results() {
           <>
             <div className="flex flex-col gap-2">
               <h1 className="m-0 font-display text-[30px] font-extrabold leading-9 tracking-[-0.8px] sm:text-4xl sm:leading-10">
-                {candidates.length} matches for “{q}”
+                {candidates.length === 1 ? "1 match" : `${candidates.length} matches`} for “{q}”
               </h1>
               <p className="m-0 text-base text-ink-muted">Pick one to open the account. Contacts open the agency they belong to.</p>
             </div>

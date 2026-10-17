@@ -1,6 +1,8 @@
 import { runLookup } from "./claude";
 import { getCachedDossier, getCachedQuery, setCachedDossier, setCachedQuery } from "./cache";
 import { NotionAuthError } from "./notionAuth";
+import { jevSearchOn } from "./jev";
+import { resolveQuery } from "./resolve";
 import type { SearchResponse } from "./schemas";
 
 // Events streamed to the browser while a lookup runs.
@@ -34,6 +36,28 @@ export async function lookup(
       const q = await getCachedQuery(query);
       if (q) ({ accountId, matchedVia } = q);
     }
+    // Match the query to an account with Jev (JEV_SEARCH=1). Candidates and "not found" are
+    // answered here without Claude; a match skips Claude's matching round. If Jev is
+    // unavailable, resolveQuery returns null and Claude matches as before.
+    if (!accountId && query && jevSearchOn()) {
+      emit({ type: "progress", message: "Matching the account" });
+      const r = await resolveQuery(query, signal).catch((e) => {
+        if (e instanceof NotionAuthError) throw e;
+        console.warn("[lookup] Jev matching failed, using Claude:", (e as Error).message);
+        return null;
+      });
+      if (r) {
+        const route = r.kind === "account" ? `${r.via} → ${r.account.name}` : r.kind;
+        console.log(`[lookup] ${JSON.stringify(query)} matched by Jev: ${route}${r.kind === "account" && r.via === "exact" ? "" : `, top ${r.top?.toFixed(2)}`} in ${Date.now() - started}ms`);
+      }
+      if (r?.kind === "account") {
+        accountId = r.account.id;
+        matchedVia = r.matchedVia;
+      } else if (r) {
+        emit({ type: "result", response: { result: r.result }, pulledAt: Date.now(), cached: false, ms: Date.now() - started });
+        return;
+      }
+    }
     if (accountId && !input.refresh) {
       const hit = await getCachedDossier(accountId);
       if (hit) {
@@ -56,6 +80,7 @@ export async function lookup(
     if (r.kind === "dossier") r.account.id = norm(r.account.id || r.account.url);
     if (r.kind === "candidates") r.candidates.forEach((c) => (c.accountId = norm(c.accountId || c.url)));
     if (r.kind === "not_found" && r.didYouMean) r.didYouMean.accountId = norm(r.didYouMean.accountId);
+    if (r.kind === "dossier" && matchedVia) r.matchedVia = matchedVia;
     if (r.kind === "dossier") {
       await setCachedDossier({ dossier: r, pulledAt });
       if (query) await setCachedQuery(query, r.account.id, r.matchedVia);
