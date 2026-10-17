@@ -28,7 +28,7 @@ function AccountPage() {
     if (!shown) return;
     const a = shown.d.account;
     pushRecent({ id: a.id, name: a.name, sub: [a.state, a.campaigns.join(", ")].filter(Boolean).join(" · ") });
-    document.title = `${a.name} · GOAL Account Lookup`;
+    document.title = `${a.name} · Paternity Leave Account Search`;
   }, [shown]);
 
   return (

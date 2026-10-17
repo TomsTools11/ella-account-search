@@ -6,7 +6,7 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 const sora = Sora({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-sora" });
 
 export const metadata: Metadata = {
-  title: "GOAL Account Lookup",
+  title: "Paternity Leave Account Search",
   description: "Look up Tom's GOAL accounts from Notion",
   robots: { index: false, follow: false },
 };

@@ -43,9 +43,9 @@ export function Header({ variant, query }: { variant: "home" | "compact"; query?
     <header className="border-b border-line bg-surface">
       <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
         <Link href="/" className="flex items-center gap-3 no-underline">
-          <span className="font-display text-[22px] font-extrabold tracking-[-0.5px] text-ink">GOAL</span>
-          <span className="h-5 w-px bg-line-strong" />
-          <span className="text-sm font-medium text-ink-muted">Account Lookup</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/baby-icon.png" alt="" width={60} height={60} className="h-[60px] w-[60px] flex-none" />
+          <span className="font-display text-base font-bold leading-5 text-ink sm:text-lg">Paternity Leave Account Search</span>
         </Link>
         {variant === "compact" ? (
           <>
