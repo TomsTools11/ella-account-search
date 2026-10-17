@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "notion:auth": "tsx --env-file=.env.local scripts/notion-auth.ts",
     "go-no-go": "tsx --env-file=.env.local scripts/go-no-go.ts",
-    "eval:search": "tsx --env-file=.env.local scripts/jev-search-eval.ts"
+    "eval:search": "tsx --env-file=.env.local scripts/jev-search-eval.ts",
+    "compare:search": "tsx --env-file=.env.local scripts/search-compare.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

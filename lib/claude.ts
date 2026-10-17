@@ -124,6 +124,8 @@ export async function runLookup(opts: {
   query: string;
   accountId?: string;
   onProgress?: (message: string) => void;
+  /** Every Notion tool call as Claude makes it (used by scripts/search-compare.ts). */
+  onToolCall?: (name: string, input: unknown) => void;
   effort?: "low" | "medium" | "high";
   signal?: AbortSignal;
 }): Promise<LookupOutcome> {
@@ -152,6 +154,7 @@ export async function runLookup(opts: {
       if (block.type === "mcp_tool_use") {
         toolCalls.push({ name: block.name, input: block.input, atMs: Date.now() - started });
         opts.onProgress?.(describeToolCall(block.name, block.input));
+        opts.onToolCall?.(block.name, block.input);
       } else if (block.type === "mcp_tool_result" && block.is_error) {
         const text = Array.isArray(block.content)
           ? block.content.map((c) => ("text" in c ? c.text : "")).join(" ")

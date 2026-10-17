@@ -77,7 +77,15 @@ function exactMatch(index: IndexedAccount[], query: string): { accounts: Indexed
     ["contact email", (a) => a.contacts.find((c) => c.email === q)?.name ?? null],
     ["alias", (a) => a.aliases.find((x) => norm(x) === q) ?? null],
     ["account name", (a) => (norm(a.name) === q ? a.name : null)],
-    ["contact", (a) => a.contacts.find((c) => norm(c.name) === q)?.name ?? null],
+    // A one-word query is also a first name: of contacts and of person aliases ("Diane" is both a
+    // contact listed as "Diane" and Diane Wagner; "John" is John Magnuson and the alias John Hunt),
+    // so it can return several accounts.
+    [
+      "contact",
+      (a) =>
+        a.contacts.find((c) => norm(c.name) === q)?.name ??
+        (q.includes(" ") ? null : ([...a.contacts.map((c) => c.name), ...a.aliases].find((n) => norm(n).split(" ")[0] === q) ?? null)),
+    ],
     // A bare domain ("allstate.com" or "@allstate.com"): every account with a contact there.
     ["email domain", (a) => (/^@?[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(q) ? a.contacts.find((c) => c.email?.endsWith("@" + q.replace(/^@/, "")))?.email?.split("@")[1] ?? null : null)],
   ];
