@@ -7,7 +7,7 @@ How the app works, and what to do when something needs changing.
 - **Next.js on Vercel.** Search and dossiers call the Claude API with Notion's hosted MCP server attached (`https://mcp.notion.com/mcp`). Only four read tools are enabled at the API level: `notion-search`, `notion-fetch`, `notion-query-data-sources`, and `notion-query-meeting-notes`. Write tools never reach Claude.
 - **Direct reads.** A few fixed reads skip Claude and call the same MCP read tools from the server: a note's full text, meeting summaries, and `/health`. (Tasks aren't shown in the app: Ella replies to client email and doesn't work Tom's task list. Ask can still read task records as background.)
 - **Fathom (optional).** If `FATHOM_API_KEY` is set, the "Get meeting summary" button falls back to Fathom recordings when Notion has no summary.
-- **Jev search matching (test branch `jev-search`, off unless `JEV_SEARCH=1`).** Matches what Ella typed to an account with TypeSafe's Jev model instead of a Claude round: exact matches in code, then one Jev request over the roster (`lib/resolve.ts`). Candidate lists and "not found" come back in about a second without Claude; a match goes straight to the dossier. If Jev fails or times out, search falls back to Claude. Thresholds are tuned with `npm run eval:search`.
+- **Jev search matching (on when `JEV_SEARCH=1`, live since 10/16).** Matches what Ella typed to an account with TypeSafe's Jev model instead of a Claude round: exact matches in code, then one Jev request over the roster (`lib/resolve.ts`). Candidate lists and "not found" come back in about 0.3 s without Claude; a match goes straight to the dossier. If Jev fails or times out, search falls back to Claude. In a head-to-head on 92 hard queries (`npm run compare:search`), Jev matched as accurately as Claude, about 35× faster, and gave the same answer on every repeat. Thresholds are tuned with `npm run eval:search`.
 - **Preview deployments are isolated.** On a Vercel preview (any branch other than `main`), every stored key gets a `preview_` prefix, so a preview has its own Notion and email connections and caches and never touches the live site's. Connect Notion once on the preview's `/admin`.
 - **Storage.** Upstash Redis holds the encrypted Notion tokens and the 15-minute caches. Locally it uses `.data/` instead, which is gitignored.
 
@@ -97,6 +97,7 @@ npm run dev
 The dev server runs on http://localhost:3000. Then:
 
 - `npm run go-no-go` runs the Willard end-to-end check. It needs `scripts/fixtures/willard.expected.json`, which is kept out of git.
+- `npm run compare:search` runs the labeled queries in `scripts/fixtures/compare-cases.json` through Claude matching and Jev side by side (add `-- --repeat 3` for consistency; spends Claude credits).
 - `npm run eval:search` scores Jev search matching on queries generated from the live roster (names, typos, aliases, contacts, emails, junk). Add `-- --compare` to also time a sample through Claude's matching. Results go to `scripts/fixtures/jev-eval.json` (kept out of git).
 - `npm run typecheck`
 
