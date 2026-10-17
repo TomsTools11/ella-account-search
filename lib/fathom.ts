@@ -105,11 +105,15 @@ export async function findFathomMeeting(opts: {
   return toMeeting(m);
 }
 
+// Full summaries from the last search, so get_fathom_call_summary rarely needs another API call.
+const recentSummaries = new Map<number, { text: string; at: number }>();
+
 /** For Ask: an account's recorded calls, newest first, with a short summary preview each. */
 export async function searchFathomCalls(opts: { accountName: string; contactEmails: string[]; days?: number }) {
   const matches = await matchingRecordings({ ...opts, after: Date.now() - (opts.days ?? 180) * DAY });
   return matches.slice(0, 8).map((m) => {
     const x = toMeeting(m);
+    if (x.summary) recentSummaries.set(x.recordingId, { text: x.summary, at: Date.now() });
     return {
       recording_id: x.recordingId,
       title: x.title,
@@ -123,9 +127,14 @@ export async function searchFathomCalls(opts: { accountName: string; contactEmai
 
 /** For Ask: one recording's full summary. */
 export async function getFathomSummary(recordingId: number): Promise<string> {
+  const hit = recentSummaries.get(recordingId);
+  if (hit && Date.now() - hit.at < 30 * 60_000) return hit.text.slice(0, 15_000);
   const res = await fetch(`${BASE}/recordings/${recordingId}/summary`, { headers: { "X-Api-Key": process.env.FATHOM_API_KEY! } });
   if (res.status === 404) return "No summary found for that recording.";
-  if (!res.ok) throw new Error(`Fathom summary failed: ${res.status}`);
+  if (!res.ok) {
+    console.error(`[fathom] summary ${recordingId} → ${res.status} ${(await res.text()).slice(0, 200)}`);
+    throw new Error(`Fathom summary failed: ${res.status}`);
+  }
   const j = (await res.json()) as { summary?: { markdown_formatted?: string | null } };
   return (j.summary?.markdown_formatted ?? "This recording has no summary.").slice(0, 15_000);
 }
